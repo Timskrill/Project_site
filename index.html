@@ -1,0 +1,493 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Бронь без конфликтов</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 40px 20px;
+            background: linear-gradient(135deg, #6ba4d9 0%, #407bb5 50%, #234e7d 100%);
+            background-attachment: fixed;
+            color: #1e293b; 
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            box-sizing: border-box;
+        }
+
+        .card {
+            background: #ffffff;
+            border-radius: 14px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15), 0 3px 6px rgba(0, 0, 0, 0.05);
+            padding: 30px;
+            margin-bottom: 25px;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        h1, h2 {
+            color: #1e3a5f;
+            margin-top: 0;
+            font-weight: 600;
+        }
+
+        h1.login-title {
+            font-size: 30px;
+            text-align: center;
+            margin-bottom: 30px;
+            color: #2c5282; 
+        }
+
+        h2 {
+            font-size: 20px;
+            border-bottom: 2px solid #e2e8f0;
+            padding-bottom: 12px;
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 6px;
+            font-size: 14px;
+            font-weight: 600;
+            color: #4a5568;
+        }
+
+        input, select {
+            width: 100%;
+            padding: 12px 14px;
+            margin-bottom: 18px;
+            border: 1px solid #cbd5e1;
+            border-radius: 8px;
+            font-size: 15px;
+            background: #f8fafc;
+            transition: all 0.2s;
+            box-sizing: border-box;
+            color: #1e293b;
+        }
+
+        input:focus, select:focus {
+            outline: none;
+            border-color: #4a7ab5;
+            background: #ffffff;
+            box-shadow: 0 0 0 3px rgba(74, 122, 181, 0.15);
+        }
+
+        button {
+            background: #4a7ab5; 
+            color: #ffffff;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 8px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            width: 100%;
+            transition: background-color 0.2s;
+        }
+
+        button:hover {
+            background: #386399;
+        }
+
+        .btn-logout {
+            background: #ffffff;
+            color: #4a5568;
+            width: auto;
+            font-size: 14px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .btn-logout:hover {
+            background: #f1f5f9;
+            color: #1e3a5f;
+        }
+
+        .btn-cancel {
+            background: #f8f9fa;
+            color: #9ca3af;
+            border: 1px solid #e5e7eb;
+            padding: 6px 14px;
+            font-size: 13px;
+            width: auto;
+            margin-top: 12px;
+        }
+
+        .btn-cancel:hover {
+            background: #f1f5f9;
+            color: #6b7280;
+        }
+
+        .admin-tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 25px;
+            width: 100%;
+            max-width: 1200px;
+        }
+
+        .admin-tabs button {
+            width: auto;
+            background: #ffffff;
+            color: #4a5568;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+        
+        .admin-tabs button:hover, .admin-tabs button.active-tab {
+            background: #4a7ab5;
+            color: #ffffff;
+        }
+
+        .item-card {
+            background: #f8fafc;
+            padding: 16px;
+            margin-bottom: 12px;
+            border-radius: 8px;
+            border: 1px solid #e2e8f0;
+            border-left: 3px solid #4a7ab5;
+        }
+
+        .item-card b {
+            color: #1e3a5f;
+            font-size: 16px;
+        }
+
+        .status-active {
+            color: #7f9e8a;
+            font-weight: 600;
+            background: #f0f4f1;
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-size: 13px;
+            display: inline-block;
+        }
+
+        .status-cancelled {
+            color: #b88a8a;
+            font-weight: 600;
+            background: #fbf5f5;
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-size: 13px;
+            text-decoration: line-through;
+            display: inline-block;
+        }
+
+        .hidden { display: none !important; }
+        .error-text { color: #9b6a6a; margin-top: 10px; font-size: 14px; font-weight: 600;}
+        .success-text { color: #6c8e79; margin-top: 10px; font-size: 14px; font-weight: 600;}
+        
+        .content-container {
+            width: 100%;
+            max-width: 1200px;
+            display: flex;
+            gap: 25px;
+            flex-wrap: wrap;
+            align-items: flex-start; 
+        }
+        
+        .column {
+            flex: 1;
+            min-width: 320px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        #login-section {
+            width: 100%;
+            max-width: 420px;
+            margin-top: 10vh;
+        }
+        
+        .header-bar {
+            width: 100%;
+            max-width: 1200px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+            background: rgba(255, 255, 255, 0.95);
+            padding: 15px 25px;
+            border-radius: 14px;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+        }
+
+        .header-bar h1 {
+            margin: 0;
+            font-size: 24px;
+        }
+        
+        .text-muted { color: #6b7280; font-size: 14px; }
+    </style>
+</head>
+<body>
+
+    <div id="login-section" class="card">
+        <h1 class="login-title">Вход в систему</h1>
+        <form id="login-form">
+            <label>Логин</label>
+            <input type="text" id="login" value="user1" required>
+            <label>Пароль</label>
+            <input type="password" id="password" value="123" required>
+            <button type="submit">Войти</button>
+        </form>
+        <div id="login-error" class="error-text" style="text-align: center;"></div>
+    </div>
+
+    <div id="main-section" class="hidden" style="width: 100%; display: flex; flex-direction: column; align-items: center;">
+        <div class="header-bar">
+            <h1>Добро пожаловать, <span id="user-name"></span>! <span id="user-role" class="text-muted" style="font-weight: normal; font-size: 16px;"></span></h1>
+            <button onclick="logout()" class="btn-logout">Выйти</button>
+        </div>
+        
+        <div id="admin-tabs" class="admin-tabs hidden">
+            <button onclick="showTab('user-view')" id="tab-user" class="active-tab">Мои брони и ресурсы</button>
+            <button onclick="showTab('admin-view')" id="tab-admin">Панель администратора</button>
+        </div>
+
+        <div id="user-view" class="content-container">
+            <div class="column">
+                <div class="card">
+                    <h2>Создать бронь</h2>
+                    <form id="booking-form">
+                        <label>Выберите ресурс</label>
+                        <select id="resource_id" required>
+                            <option value="" disabled selected>Загрузка ресурсов...</option>
+                        </select>
+                        <label>Начало (МСК)</label>
+                        <input type="datetime-local" id="starts_at" required>
+                        <label>Конец (МСК)</label>
+                        <input type="datetime-local" id="ends_at" required>
+                        <label>Цель бронирования</label>
+                        <input type="text" id="purpose" placeholder="Например: Рабочее совещание" required>
+                        <button type="submit">Забронировать</button>
+                    </form>
+                    <div id="message"></div>
+                </div>
+            </div>
+
+            <div class="column">
+                <div class="card">
+                    <h2>Мои бронирования</h2>
+                    <div id="my-bookings-list">Загрузка...</div>
+                </div>
+            </div>
+        </div>
+
+        <div id="admin-view" class="hidden" style="width: 100%; max-width: 1200px;">
+            <div class="card">
+                <h2>Все бронирования в системе</h2>
+                <div id="all-bookings-list"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        window.onload = () => {
+            const token = localStorage.getItem('token');
+            const role = localStorage.getItem('userRole');
+            
+            if (token) {
+                document.getElementById('login-section').classList.add('hidden');
+                document.getElementById('main-section').classList.remove('hidden');
+                document.getElementById('user-name').textContent = localStorage.getItem('userName');
+                
+                if (role === 'admin') {
+                    document.getElementById('user-role').textContent = '(Администратор)';
+                    document.getElementById('admin-tabs').classList.remove('hidden');
+                }
+
+                loadResourcesToSelect();
+                loadMyBookings();
+            }
+        };
+
+        document.getElementById('login-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const res = await fetch('/api/login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ 
+                    login: document.getElementById('login').value, 
+                    password: document.getElementById('password').value 
+                })
+            });
+            const data = await res.json();
+            if (res.ok) {
+                localStorage.setItem('token', data.token);
+                localStorage.setItem('userName', data.name);
+                localStorage.setItem('userRole', data.role);
+                window.location.reload();
+            } else {
+                document.getElementById('login-error').textContent = data.error;
+            }
+        });
+
+        function showTab(tabId) {
+            document.getElementById('user-view').classList.add('hidden');
+            document.getElementById('admin-view').classList.add('hidden');
+            document.getElementById(tabId).classList.remove('hidden');
+            
+            document.getElementById('tab-user').classList.remove('active-tab');
+            document.getElementById('tab-admin').classList.remove('active-tab');
+            if(tabId === 'user-view') document.getElementById('tab-user').classList.add('active-tab');
+            else document.getElementById('tab-admin').classList.add('active-tab');
+
+            if (tabId === 'admin-view') loadAllBookings();
+        }
+
+        function loadResourcesToSelect() {
+            fetch('/api/resources').then(res => res.json()).then(data => {
+                const select = document.getElementById('resource_id');
+                select.innerHTML = '';
+                data.forEach(res => {
+                    const location = res.location ? ` (${res.location})` : '';
+                    select.innerHTML += `<option value="${res.id}">${res.name}${location}</option>`;
+                });
+            });
+        }
+
+        function loadMyBookings() {
+            fetch('/api/bookings/my', {
+                headers: { 'Authorization': 'Bearer ' + localStorage.getItem('token') }
+            })
+            .then(res => res.json())
+            .then(data => {
+                const list = document.getElementById('my-bookings-list');
+                list.innerHTML = '';
+                if (data.length === 0) { list.innerHTML = '<p class="text-muted">У вас пока нет броней.</p>'; return; }
+                data.forEach(b => {
+                    const start = new Date(b.starts_at).toLocaleString('ru-RU');
+                    const end = new Date(b.ends_at).toLocaleString('ru-RU');
+                    const statusClass = b.status === 'active' ? 'status-active' : 'status-cancelled';
+                    const statusText = b.status === 'active' ? 'Активна' : 'Отменена';
+                    const cancelBtn = b.status === 'active' ? `<button class="btn-cancel" onclick="cancelBooking(${b.id})">Отменить</button>` : '';
+                    
+                    list.innerHTML += `
+                        <div class="item-card">
+                            <b>${b.resource_name}</b><br>
+                            <span class="text-muted">Время: ${start} — ${end}</span><br>
+                            <span class="text-muted">Цель: ${b.purpose}</span><br><br>
+                            <span class="${statusClass}">${statusText}</span>
+                            ${cancelBtn}
+                        </div>`;
+                });
+            });
+        }
+
+        function loadAllBookings() {
+            fetch('/api/admin/bookings', {
+                headers: { 'Authorization': 'Bearer ' + localStorage.getItem('token') }
+            })
+            .then(res => res.json())
+            .then(data => {
+                const list = document.getElementById('all-bookings-list');
+                list.innerHTML = '';
+                data.forEach(b => {
+                    const start = new Date(b.starts_at).toLocaleString('ru-RU');
+                    const end = new Date(b.ends_at).toLocaleString('ru-RU');
+                    const statusClass = b.status === 'active' ? 'status-active' : 'status-cancelled';
+                    const statusText = b.status === 'active' ? 'Активна' : 'Отменена';
+                    
+                    const cancelBtn = b.status === 'active' 
+                        ? `<button class="btn-cancel" onclick="adminCancelBooking(${b.id})">Отменить с причиной</button>` 
+                        : `<br><span class="text-muted" style="font-size: 12px;">Причина: ${b.cancel_reason || '-'}</span>`;
+
+                    list.innerHTML += `
+                        <div class="item-card">
+                            <b>Ресурс:</b> ${b.resource_name}<br>
+                            <b>Кто:</b> ${b.owner_name} <span class="text-muted">(ID: ${b.owner_id})</span><br>
+                            <span class="text-muted">Время: ${start} — ${end}</span><br>
+                            <span class="text-muted">Цель: ${b.purpose}</span><br><br>
+                            <span class="${statusClass}">${statusText}</span>
+                            ${cancelBtn}
+                        </div>`;
+                });
+            });
+        }
+
+        window.cancelBooking = async function(id) {
+            if (!confirm('Отменить бронь?')) return;
+            const res = await fetch(`/api/bookings/${id}/cancel`, {
+                method: 'POST',
+                headers: { 'Authorization': 'Bearer ' + localStorage.getItem('token') }
+            });
+            if (res.ok) loadMyBookings();
+            else alert('Ошибка отмены');
+        };
+
+        window.adminCancelBooking = async function(id) {
+            const reason = prompt('Укажите причину отмены (обязательно):');
+            if (!reason) return alert('Отмена невозможна без причины!');
+            
+            const res = await fetch(`/api/admin/bookings/${id}/cancel`, {
+                method: 'POST',
+                headers: { 
+                    'Content-Type': 'application/json',
+                    'Authorization': 'Bearer ' + localStorage.getItem('token') 
+                },
+                body: JSON.stringify({ reason })
+            });
+            
+            if (res.ok) loadAllBookings();
+            else {
+                const err = await res.json();
+                alert('Ошибка: ' + err.error);
+            }
+        };
+
+        document.getElementById('booking-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const msg = document.getElementById('message');
+            msg.textContent = 'Отправка...';
+            msg.className = '';
+
+            const data = {
+                resource_id: parseInt(document.getElementById('resource_id').value),
+                starts_at: new Date(document.getElementById('starts_at').value).toISOString(),
+                ends_at: new Date(document.getElementById('ends_at').value).toISOString(),
+                purpose: document.getElementById('purpose').value
+            };
+
+            if (!window.currentIdempotencyKey) {
+                window.currentIdempotencyKey = crypto.randomUUID();
+            }
+
+            fetch('/api/bookings', {
+                method: 'POST',
+                headers: { 
+                    'Content-Type': 'application/json', 
+                    'Authorization': 'Bearer ' + localStorage.getItem('token'),
+                    'Idempotency-Key': window.currentIdempotencyKey
+                },
+                body: JSON.stringify(data)
+            })
+            .then(async res => {
+                const result = await res.json();
+                if (res.ok) { 
+                    msg.textContent = `Успешно! Номер брони: ${result.id}`; 
+                    msg.className = 'success-text';
+                    window.currentIdempotencyKey = null;
+                    loadMyBookings(); 
+                } else { 
+                    msg.textContent = `Ошибка: ${result.error}`; 
+                    msg.className = 'error-text';
+                }
+            })
+            .catch(() => {
+                msg.textContent = 'Ошибка сети';
+                msg.className = 'error-text';
+            });
+        });
+
+        function logout() {
+            localStorage.clear();
+            window.location.reload();
+        }
+    </script>
+</body>
+</html>
